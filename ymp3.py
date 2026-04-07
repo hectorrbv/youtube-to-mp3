@@ -1,7 +1,20 @@
 import yt_dlp
 import os
 import sys
+import shutil
 from pathlib import Path
+
+def _find_node_path():
+    """Encuentra el path de Node.js para el JS runtime de yt-dlp"""
+    node = shutil.which('node')
+    if node:
+        return node
+    for p in ['/opt/homebrew/bin/node', '/usr/local/bin/node']:
+        if os.path.isfile(p):
+            return p
+    return None
+
+_NODE_PATH = _find_node_path()
 
 def descargar_youtube_mp3(url, carpeta_destino="./descargas"):
     """
@@ -29,6 +42,8 @@ def descargar_youtube_mp3(url, carpeta_destino="./descargas"):
         ],
         'prefer_ffmpeg': True,
         'keepvideo': False,  # No mantener el video original
+        'remote_components': {'ejs:github': {}},
+        **(({'js_runtimes': {'node': {'path': _NODE_PATH}}} ) if _NODE_PATH else {}),
     }
     
     try:
@@ -81,6 +96,8 @@ def descargar_playlist_mp3(url_playlist, carpeta_destino="./descargas"):
         }],
         'prefer_ffmpeg': True,
         'keepvideo': False,
+        'remote_components': {'ejs:github': {}},
+        **(({'js_runtimes': {'node': {'path': _NODE_PATH}}} ) if _NODE_PATH else {}),
     }
     
     try:
